@@ -73,27 +73,27 @@ class Grafo {
 
     carregarDeObjeto(dadosCapitais) {
         dadosCapitais.forEach(cidadeObj => {
-                const nomeCidade = Object.keys(cidadeObj)[0];
-                const dadosCidade = cidadeObj[nomeCidade];
+            const nomeCidade = Object.keys(cidadeObj)[0];
+            const dadosCidade = cidadeObj[nomeCidade];
 
-                if (!this.listaAdjacencia.has(nomeCidade)) {
-                    this.listaAdjacencia.set(nomeCidade, []);
+            if (!this.listaAdjacencia.has(nomeCidade)) {
+                this.listaAdjacencia.set(nomeCidade, []);
+            }
+
+            this.pedagios.set(nomeCidade, dadosCidade.toll);
+
+            Object.entries(dadosCidade.neighbors).forEach(([vizinho, distancia]) => {
+                this.listaAdjacencia.get(nomeCidade).push({ cidade: vizinho, distancia });
+
+                if (!this.listaAdjacencia.has(vizinho)) {
+                    this.listaAdjacencia.set(vizinho, []);
                 }
-
-                this.pedagios.set(nomeCidade, dadosCidade.toll);
-
-                Object.entries(dadosCidade.neighbors).forEach(([vizinho, distancia]) => {
-                    this.listaAdjacencia.get(nomeCidade).push({ cidade: vizinho, distancia });
-
-                    if (!this.listaAdjacencia.has(vizinho)) {
-                        this.listaAdjacencia.set(vizinho, []);
-                    }
-                });
             });
+        });
+    }
 
-            console.log('Dados carregados com sucesso!');
-        } catch (erro) {
-            console.error('Erro ao carregar dados:', erro.message);
+    mostrar() {
+        console.log('\n=== GRAFO DE CAPITAIS ===');
         for (const [cidade, vizinhos] of this.listaAdjacencia) {
             const pedagio = this.pedagios.get(cidade) || 0;
             console.log(`\n${cidade} (Pedágio: R$ ${pedagio})`);
@@ -262,35 +262,88 @@ class Grafo {
     }
 }
 
-function principal() {
+async function carregarCapitais() {
+    try {
+        const response = await fetch('capitais.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const capitaisData = await response.json();
+        console.log("Capitais carregadas com sucesso:", capitaisData);
+        return capitaisData;
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        return [];
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const capitaisData = await carregarCapitais();
+    console.log("DEBUG - Dados recebidos:", capitaisData);
+
     const grafo = new Grafo();
+    grafo.carregarDeObjeto(capitaisData);
 
-    const caminhoJson = path.join(__dirname, 'capitais.json');
-    grafo.carregarDeArquivo(caminhoJson);
+    const selectOrigem = document.getElementById('selectOrigem');
+    const selectDestino = document.getElementById('selectDestino');
+    const valorCombustivel = document.getElementById('valorCombustivel');
+    const autonomia = document.getElementById('autonomia');
+    const btnCalcular = document.getElementById('btnCalcular');
 
-    grafo.mostrar();
-
-    console.log('CAPITAIS DISPONÍVEIS:');
     const capitais = grafo.listarCapitais();
-    capitais.forEach((cidade, i) => {
-        console.log(`${i + 1}. ${cidade}`);
+    console.log("DEBUG - Capitais no grafo:", capitais);
+
+    capitais.forEach(cidade => {
+        const optOrigem = document.createElement('option');
+        optOrigem.value = cidade;
+        optOrigem.textContent = cidade;
+        selectOrigem.appendChild(optOrigem);
+
+        const optDestino = document.createElement('option');
+        optDestino.value = cidade;
+        optDestino.textContent = cidade;
+        selectDestino.appendChild(optDestino);
     });
 
-    console.log('\n' + '='.repeat(50));
-    console.log('EXEMPLO DE BUSCA:');
 
-    const origem = 'São Paulo';
-    const destino = 'Manaus';
-    const precoCombustivel = 5.50;
-    const autonomiaKmL = 12;
+    btnCalcular.addEventListener('click', () => {
+        const origem = selectOrigem.value;
+        const destino = selectDestino.value;
+        const precoCombustivel = valorCombustivel.value;
+        const autonomiaKml = autonomia.value;
+        const containerResultados = document.getElementById('results');
 
-    grafo.buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL);
+        if (!origem || !destino) {
+            containerResultados.innerHTML = '<p class="error">Por favor, selecione as capitais de origem e destino.</p>';
+            return;
+        }
 
-    return grafo;
-}
+        if (origem === destino) {
+            containerResultados.innerHTML = '<p class="info">As capitais de origem e destino são as mesmas.</p>';
+            return;
+        }
 
-module.exports = { Grafo, principal };
+        if (!precoCombustivel) {
+            containerResultados.innerHTML = '<p class="error">Por favor, informe o preço do combustível.</p>';
+            return;
+        }
 
-if (require.main === module) {
-    principal();
-}
+        if (precoCombustivel < 0) {
+            containerResultados.innerHTML = '<p class="error">O preço do combustível deve ser maior que zero.</p>';
+            return;
+        }
+
+        if (!autonomiaKml) {
+            containerResultados.innerHTML = '<p class="error">Por favor, informe a autonomia do veículo.</p>';
+            return;
+        }
+
+        if (autonomiaKml < 0) {
+            containerResultados.innerHTML = '<p class="error">A autonomia do veículo deve ser maior que zero.</p>';
+            return;
+        }
+
+        grafo.buscarCaminhoMaisBarato(origem, destino, parseFloat(precoCombustivel), parseFloat(autonomiaKml));
+    });
+});
