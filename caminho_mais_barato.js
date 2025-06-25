@@ -269,7 +269,6 @@ async function carregarCapitais() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const capitaisData = await response.json();
-        console.log("Capitais carregadas com sucesso:", capitaisData);
         return capitaisData;
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -280,7 +279,6 @@ async function carregarCapitais() {
 document.addEventListener('DOMContentLoaded', async () => {
 
     const capitaisData = await carregarCapitais();
-    console.log("DEBUG - Dados recebidos:", capitaisData);
 
     const grafo = new Grafo();
     grafo.carregarDeObjeto(capitaisData);
@@ -292,7 +290,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnCalcular = document.getElementById('btnCalcular');
 
     const capitais = grafo.listarCapitais();
-    console.log("DEBUG - Capitais no grafo:", capitais);
 
     capitais.forEach(cidade => {
         const optOrigem = document.createElement('option');
