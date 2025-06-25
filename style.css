@@ -51,3 +51,21 @@ body {
 .div-inputs {
     margin-top: 50px;
 }
+
+.error {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.info {
+    color: #259c39;
+    font-weight: bold;
+}
+
+.path-result {
+background-color: #eff1ec;
+border-left: 4px solid #259c39;
+padding: 15px;
+margin-bottom: 15px;
+border-radius: 0 4px 4px 0;
+}
