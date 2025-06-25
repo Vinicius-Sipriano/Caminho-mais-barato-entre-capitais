@@ -71,12 +71,8 @@ class Grafo {
         this.pedagios = new Map();
     }
 
-    carregarDeArquivo(caminhoArquivo) {
-        try {
-            const dados = fs.readFileSync(caminhoArquivo, 'utf8');
-            const capitais = JSON.parse(dados);
-
-            capitais.forEach(cidadeObj => {
+    carregarDeObjeto(dadosCapitais) {
+        dadosCapitais.forEach(cidadeObj => {
                 const nomeCidade = Object.keys(cidadeObj)[0];
                 const dadosCidade = cidadeObj[nomeCidade];
 
@@ -98,11 +94,6 @@ class Grafo {
             console.log('Dados carregados com sucesso!');
         } catch (erro) {
             console.error('Erro ao carregar dados:', erro.message);
-        }
-    }
-
-    mostrar() {
-        console.log('\n=== GRAFO DE CAPITAIS ===');
         for (const [cidade, vizinhos] of this.listaAdjacencia) {
             const pedagio = this.pedagios.get(cidade) || 0;
             console.log(`\n${cidade} (Pedágio: R$ ${pedagio})`);
