@@ -228,7 +228,6 @@ class Grafo {
     buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL, containerResultados) {
         let html = '';
 
-        html += `<br>`
         html += `<h5>Busca Caminho Mais Barato</h5>`;
         html += `<p><strong>Origem:</strong> ${origem}</p>`;
         html += `<p><strong>Destino:</strong> ${destino}</p>`;
