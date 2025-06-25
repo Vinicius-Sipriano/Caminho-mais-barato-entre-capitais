@@ -225,38 +225,45 @@ class Grafo {
         return Array.from(this.listaAdjacencia.keys()).sort();
     }
 
-    buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL) {
-        console.log(`\n=== BUSCA CAMINHO MAIS BARATO ===`);
-        console.log(`Origem: ${origem}`);
-        console.log(`Destino: ${destino}`);
-        console.log(`Preço Combustível: R$ ${precoCombustivel.toFixed(2)}/L`);
-        console.log(`Autonomia: ${autonomiaKmL} km/L`);
-        console.log('================================\n');
+    buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL, containerResultados) {
+        let html = '';
+
+        html += `<br>`
+        html += `<h5>Busca Caminho Mais Barato</h5>`;
+        html += `<p><strong>Origem:</strong> ${origem}</p>`;
+        html += `<p><strong>Destino:</strong> ${destino}</p>`;
+        html += `<p><strong>Preço do Combustível:</strong> R$ ${precoCombustivel.toFixed(2)}/L</p>`;
+        html += `<p><strong>Autonomia:</strong> ${autonomiaKmL} km/L</p>`;
+        html += `<hr>`;
 
         const resultado = this.dijkstra(origem, destino, precoCombustivel, autonomiaKmL);
 
         if (resultado.sucesso) {
-            console.log('ROTA ENCONTRADA:');
-            console.log(`Caminho: ${resultado.rota.join(' -> ')}`);
-            console.log(`Custo Total: R$ ${resultado.custoTotal.toFixed(2)}`);
+            html += `<h6>Rota Encontrada</h6>`;
+            html += `<p><strong>Caminho:</strong> ${resultado.rota.join(' → ')}</p>`;
+            html += `<p><strong>Custo Total:</strong> R$ ${resultado.custoTotal.toFixed(2)}</p>`;
+            html += `<hr><h6>Detalhes do Trajeto</h6>`;
 
-            console.log('\nDETALHES DO TRAJETO:');
             resultado.detalhes.trechos.forEach((trecho, i) => {
-                console.log(`${i + 1}. ${trecho.de} -> ${trecho.para}`);
-                console.log(`   Distância: ${trecho.distancia} km`);
-                console.log(`   Combustível: R$ ${trecho.custoCombustivel.toFixed(2)}`);
-                console.log(`   Pedágio: R$ ${trecho.custoPedagio.toFixed(2)}`);
-                console.log(`   Subtotal: R$ ${trecho.custoTrecho.toFixed(2)}\n`);
+                html += `<div class="text-start mb-2">`;
+                html += `<strong>${i + 1}. ${trecho.de} → ${trecho.para}</strong><br>`;
+                html += `Distância: ${trecho.distancia} km<br>`;
+                html += `Combustível: R$ ${trecho.custoCombustivel.toFixed(2)}<br>`;
+                html += `Pedágio: R$ ${trecho.custoPedagio.toFixed(2)}<br>`;
+                html += `<strong>Subtotal:</strong> R$ ${trecho.custoTrecho.toFixed(2)}`;
+                html += `</div>`;
             });
 
-            console.log('RESUMO:');
-            console.log(`Distância Total: ${resultado.detalhes.resumo.distanciaTotal} km`);
-            console.log(`Gasto com Combustível: R$ ${resultado.detalhes.resumo.custoTotalCombustivel.toFixed(2)}`);
-            console.log(`Gasto com Pedágios: R$ ${resultado.detalhes.resumo.custoTotalPedagios.toFixed(2)}`);
-            console.log(`TOTAL: R$ ${resultado.detalhes.resumo.custoTotal.toFixed(2)}`);
+            html += `<hr><h6>Resumo</h6>`;
+            html += `<p><strong>Distância Total:</strong> ${resultado.detalhes.resumo.distanciaTotal} km</p>`;
+            html += `<p><strong>Gasto com Combustível:</strong> R$ ${resultado.detalhes.resumo.custoTotalCombustivel.toFixed(2)}</p>`;
+            html += `<p><strong>Gasto com Pedágios:</strong> R$ ${resultado.detalhes.resumo.custoTotalPedagios.toFixed(2)}</p>`;
+            html += `<p><strong>TOTAL:</strong> R$ ${resultado.detalhes.resumo.custoTotal.toFixed(2)}</p>`;
         } else {
-            console.log(`ERRO: ${resultado.mensagem}`);
+            html += `<p class="text-danger"><strong>Erro:</strong> ${resultado.mensagem}</p>`;
         }
+
+        containerResultados.innerHTML = html;
 
         return resultado;
     }
@@ -341,6 +348,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        grafo.buscarCaminhoMaisBarato(origem, destino, parseFloat(precoCombustivel), parseFloat(autonomiaKml));
+        grafo.buscarCaminhoMaisBarato(origem, destino, parseFloat(precoCombustivel), parseFloat(autonomiaKml), containerResultados);
     });
 });
