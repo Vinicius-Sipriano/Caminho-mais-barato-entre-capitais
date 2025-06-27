@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 class MinHeap {
     constructor() {
         this.heap = [];
@@ -74,34 +71,25 @@ class Grafo {
         this.pedagios = new Map();
     }
 
-    carregarDeArquivo(caminhoArquivo) {
-        try {
-            const dados = fs.readFileSync(caminhoArquivo, 'utf8');
-            const capitais = JSON.parse(dados);
+    carregarDeObjeto(dadosCapitais) {
+        dadosCapitais.forEach(cidadeObj => {
+            const nomeCidade = Object.keys(cidadeObj)[0];
+            const dadosCidade = cidadeObj[nomeCidade];
 
-            capitais.forEach(cidadeObj => {
-                const nomeCidade = Object.keys(cidadeObj)[0];
-                const dadosCidade = cidadeObj[nomeCidade];
+            if (!this.listaAdjacencia.has(nomeCidade)) {
+                this.listaAdjacencia.set(nomeCidade, []);
+            }
 
-                if (!this.listaAdjacencia.has(nomeCidade)) {
-                    this.listaAdjacencia.set(nomeCidade, []);
+            this.pedagios.set(nomeCidade, dadosCidade.toll);
+
+            Object.entries(dadosCidade.neighbors).forEach(([vizinho, distancia]) => {
+                this.listaAdjacencia.get(nomeCidade).push({ cidade: vizinho, distancia });
+
+                if (!this.listaAdjacencia.has(vizinho)) {
+                    this.listaAdjacencia.set(vizinho, []);
                 }
-
-                this.pedagios.set(nomeCidade, dadosCidade.toll);
-
-                Object.entries(dadosCidade.neighbors).forEach(([vizinho, distancia]) => {
-                    this.listaAdjacencia.get(nomeCidade).push({ cidade: vizinho, distancia });
-
-                    if (!this.listaAdjacencia.has(vizinho)) {
-                        this.listaAdjacencia.set(vizinho, []);
-                    }
-                });
             });
-
-            console.log('Dados carregados com sucesso!');
-        } catch (erro) {
-            console.error('Erro ao carregar dados:', erro.message);
-        }
+        });
     }
 
     mostrar() {
@@ -154,7 +142,12 @@ class Grafo {
 
                 const distanciaKm = vizinho.distancia;
                 const custoCombustivel = (distanciaKm / autonomiaKmL) * precoCombustivel;
-                const custoPedagio = this.pedagios.get(vizinho.cidade) || 0;
+
+                let custoPedagio = 0;
+                if (vizinho.cidade !== destino) {
+                    custoPedagio = this.pedagios.get(vizinho.cidade) || 0;
+                }
+
                 const custoTotal = custoCombustivel + custoPedagio;
 
                 const novaDistancia = distancias.get(atual.cidade) + custoTotal;
@@ -205,8 +198,10 @@ class Grafo {
             if (vizinho) {
                 const distancia = vizinho.distancia;
                 const custoCombustivel = (distancia / autonomiaKmL) * precoCombustivel;
-                const custoPedagio = this.pedagios.get(para) || 0;
-
+                let custoPedagio = 0;
+                if (i < caminho.length - 2) {
+                    custoPedagio = this.pedagios.get(para) || 0;
+                }
                 detalhes.push({
                     de,
                     para,
@@ -237,72 +232,128 @@ class Grafo {
         return Array.from(this.listaAdjacencia.keys()).sort();
     }
 
-    buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL) {
-        console.log(`\n=== BUSCA CAMINHO MAIS BARATO ===`);
-        console.log(`Origem: ${origem}`);
-        console.log(`Destino: ${destino}`);
-        console.log(`Preço Combustível: R$ ${precoCombustivel.toFixed(2)}/L`);
-        console.log(`Autonomia: ${autonomiaKmL} km/L`);
-        console.log('================================\n');
+    buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL, containerResultados) {
+        let html = '';
+
+        html += `<h5>Busca Caminho Mais Barato</h5>`;
+        html += `<p><strong>Origem:</strong> ${origem}</p>`;
+        html += `<p><strong>Destino:</strong> ${destino}</p>`;
+        html += `<p><strong>Preço do Combustível:</strong> R$ ${precoCombustivel.toFixed(2)}/L</p>`;
+        html += `<p><strong>Autonomia:</strong> ${autonomiaKmL} km/L</p>`;
+        html += `<hr>`;
 
         const resultado = this.dijkstra(origem, destino, precoCombustivel, autonomiaKmL);
 
         if (resultado.sucesso) {
-            console.log('ROTA ENCONTRADA:');
-            console.log(`Caminho: ${resultado.rota.join(' -> ')}`);
-            console.log(`Custo Total: R$ ${resultado.custoTotal.toFixed(2)}`);
+            html += `<h6>Rota Encontrada</h6>`;
+            html += `<p><strong>Caminho:</strong> ${resultado.rota.join(' → ')}</p>`;
+            html += `<p><strong>Custo Total:</strong> R$ ${resultado.custoTotal.toFixed(2)}</p>`;
+            html += `<hr><h6>Detalhes do Trajeto</h6>`;
 
-            console.log('\nDETALHES DO TRAJETO:');
             resultado.detalhes.trechos.forEach((trecho, i) => {
-                console.log(`${i + 1}. ${trecho.de} -> ${trecho.para}`);
-                console.log(`   Distância: ${trecho.distancia} km`);
-                console.log(`   Combustível: R$ ${trecho.custoCombustivel.toFixed(2)}`);
-                console.log(`   Pedágio: R$ ${trecho.custoPedagio.toFixed(2)}`);
-                console.log(`   Subtotal: R$ ${trecho.custoTrecho.toFixed(2)}\n`);
+                html += `<div class="text-start mb-2">`;
+                html += `<strong>${i + 1}. ${trecho.de} → ${trecho.para}</strong><br>`;
+                html += `Distância: ${trecho.distancia} km<br>`;
+                html += `Combustível: R$ ${trecho.custoCombustivel.toFixed(2)}<br>`;
+                html += `Pedágio: R$ ${trecho.custoPedagio.toFixed(2)}<br>`;
+                html += `<strong>Subtotal:</strong> R$ ${trecho.custoTrecho.toFixed(2)}`;
+                html += `</div>`;
             });
 
-            console.log('RESUMO:');
-            console.log(`Distância Total: ${resultado.detalhes.resumo.distanciaTotal} km`);
-            console.log(`Gasto com Combustível: R$ ${resultado.detalhes.resumo.custoTotalCombustivel.toFixed(2)}`);
-            console.log(`Gasto com Pedágios: R$ ${resultado.detalhes.resumo.custoTotalPedagios.toFixed(2)}`);
-            console.log(`TOTAL: R$ ${resultado.detalhes.resumo.custoTotal.toFixed(2)}`);
+            html += `<hr><h6>Resumo</h6>`;
+            html += `<p><strong>Distância Total:</strong> ${resultado.detalhes.resumo.distanciaTotal} km</p>`;
+            html += `<p><strong>Gasto com Combustível:</strong> R$ ${resultado.detalhes.resumo.custoTotalCombustivel.toFixed(2)}</p>`;
+            html += `<p><strong>Gasto com Pedágios:</strong> R$ ${resultado.detalhes.resumo.custoTotalPedagios.toFixed(2)}</p>`;
+            html += `<p><strong>TOTAL:</strong> R$ ${resultado.detalhes.resumo.custoTotal.toFixed(2)}</p>`;
         } else {
-            console.log(`ERRO: ${resultado.mensagem}`);
+            html += `<p class="text-danger"><strong>Erro:</strong> ${resultado.mensagem}</p>`;
         }
+
+        containerResultados.innerHTML = html;
 
         return resultado;
     }
 }
 
-function principal() {
+async function carregarCapitais() {
+    try {
+        const response = await fetch('capitais.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const capitaisData = await response.json();
+        return capitaisData;
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        return [];
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const capitaisData = await carregarCapitais();
+
     const grafo = new Grafo();
+    grafo.carregarDeObjeto(capitaisData);
 
-    const caminhoJson = path.join(__dirname, 'capitais.json');
-    grafo.carregarDeArquivo(caminhoJson);
+    const selectOrigem = document.getElementById('selectOrigem');
+    const selectDestino = document.getElementById('selectDestino');
+    const valorCombustivel = document.getElementById('valorCombustivel');
+    const autonomia = document.getElementById('autonomia');
+    const btnCalcular = document.getElementById('btnCalcular');
 
-    grafo.mostrar();
-
-    console.log('CAPITAIS DISPONÍVEIS:');
     const capitais = grafo.listarCapitais();
-    capitais.forEach((cidade, i) => {
-        console.log(`${i + 1}. ${cidade}`);
+
+    capitais.forEach(cidade => {
+        const optOrigem = document.createElement('option');
+        optOrigem.value = cidade;
+        optOrigem.textContent = cidade;
+        selectOrigem.appendChild(optOrigem);
+
+        const optDestino = document.createElement('option');
+        optDestino.value = cidade;
+        optDestino.textContent = cidade;
+        selectDestino.appendChild(optDestino);
     });
 
-    console.log('\n' + '='.repeat(50));
-    console.log('EXEMPLO DE BUSCA:');
 
-    const origem = 'São Paulo';
-    const destino = 'Manaus';
-    const precoCombustivel = 5.50;
-    const autonomiaKmL = 12;
+    btnCalcular.addEventListener('click', () => {
+        const origem = selectOrigem.value;
+        const destino = selectDestino.value;
+        const precoCombustivel = valorCombustivel.value;
+        const autonomiaKml = autonomia.value;
+        const containerResultados = document.getElementById('results');
 
-    grafo.buscarCaminhoMaisBarato(origem, destino, precoCombustivel, autonomiaKmL);
+        if (!origem || !destino) {
+            containerResultados.innerHTML = '<p class="error">Por favor, selecione as capitais de origem e destino.</p>';
+            return;
+        }
 
-    return grafo;
-}
+        if (origem === destino) {
+            containerResultados.innerHTML = '<p class="info">As capitais de origem e destino são as mesmas.</p>';
+            return;
+        }
 
-module.exports = { Grafo, principal };
+        if (!precoCombustivel) {
+            containerResultados.innerHTML = '<p class="error">Por favor, informe o preço do combustível.</p>';
+            return;
+        }
 
-if (require.main === module) {
-    principal();
-}
+        if (precoCombustivel < 0) {
+            containerResultados.innerHTML = '<p class="error">O preço do combustível deve ser maior que zero.</p>';
+            return;
+        }
+
+        if (!autonomiaKml) {
+            containerResultados.innerHTML = '<p class="error">Por favor, informe a autonomia do veículo.</p>';
+            return;
+        }
+
+        if (autonomiaKml < 0) {
+            containerResultados.innerHTML = '<p class="error">A autonomia do veículo deve ser maior que zero.</p>';
+            return;
+        }
+
+        grafo.buscarCaminhoMaisBarato(origem, destino, parseFloat(precoCombustivel), parseFloat(autonomiaKml), containerResultados);
+    });
+});

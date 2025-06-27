@@ -1,0 +1,78 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&display=swap');
+
+* {
+    font-family: "Nunito", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f1f1f1;
+}
+
+.custom-select {
+    background-color: #ffffff;
+    font-weight: 600;
+    height: 50px;
+}
+
+.custom-btn {
+    background-color: #7ed957;
+    font-weight: 600;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.custom-btn:hover {
+    background-color: #7ed957;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    height: 50px;
+}
+
+.text-title {
+    font-size: 36px;
+}
+
+.text-subtitle {
+    font-size: 32px;
+    color: #7ed957;
+}
+
+.div-inputs {
+    margin-top: 50px;
+}
+
+.error {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.info {
+    color: #259c39;
+    font-weight: bold;
+}
+
+.path-result {
+background-color: #eff1ec;
+border-left: 4px solid #259c39;
+padding: 15px;
+margin-bottom: 15px;
+border-radius: 0 4px 4px 0;
+}
+
+#results {
+background-color: white;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}

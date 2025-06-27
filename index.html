@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caminho mais Barato</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="text-center p-4 rounded" style="max-width: 500px; width: 100%;">
+        <h2 class="text-title fw-bold">Caminho mais Barato</h2>
+        <h4 class="text-subtitle mb-4">entre capitais</h4>
+
+        <div class="div-inputs">
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <select id="selectOrigem" class="form-select custom-select">
+                        <option class="txt-option" selected>Capital de origem</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <select id="selectDestino" class="form-select custom-select">
+                        <option selected>Capital de destino</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <input id="valorCombustivel" type="number" class="form-control" placeholder="Valor do combustível">
+                </div>
+                <div class="col-6">
+                    <input id="autonomia" type="number" class="form-control" placeholder="Autonomia (km/l)">
+                </div>
+            </div>
+        </div>
+
+        <button id="btnCalcular" class="btn w-100 custom-btn">Calcular</button>
+
+        <br><br>
+        <div id="results">
+            <br>
+            <p>Selecione as capitais e clique no botão para ver o resultado.</p>
+        </div>
+    </div>
+    <script src="caminho_mais_barato.js"></script>
+</body>
+
+</html>
